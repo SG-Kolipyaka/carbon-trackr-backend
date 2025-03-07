@@ -4,17 +4,13 @@ require("dotenv").config();
 
 const carbonRouter = Router();
 
-// **POST /carbon/calculate** → AI-based Carbon Footprint Calculation & Recommendations
 carbonRouter.post("/calculate", async (req, res) => {
     try {
         const { travelMode, distance, fuelType, passengers } = req.body;
 
-        // Validate request
         if (!travelMode || !distance || !passengers) {
             return res.status(400).json({ error: "Missing required fields" });
         }
-
-        // Initialize AI Model
         const genAI = new GoogleGenerativeAI(process.env.API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -31,14 +27,10 @@ carbonRouter.post("/calculate", async (req, res) => {
         }
     `;
     
-        // Generate AI Response
         const result = await model.generateContent([prompt]);
-        let aiResponse = result.response.text(); // Extract raw text response
+        let aiResponse = result.response.text();
 
-        // **Fix: Remove unwanted formatting (e.g., triple backticks, markdown, etc.)**
         aiResponse = aiResponse.replace(/```json|```/g, "").trim();
-
-        // Parse AI JSON Response
         const aiData = JSON.parse(aiResponse);
 
         res.json({
